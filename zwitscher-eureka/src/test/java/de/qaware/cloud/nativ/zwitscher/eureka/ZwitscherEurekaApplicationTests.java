@@ -25,15 +25,51 @@ package de.qaware.cloud.nativ.zwitscher.eureka;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import static junit.framework.TestCase.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class ZwitscherEurekaApplicationTests {
 
+    public static final int DEFINED_EUREKA_SERVER_PORT = 8761;
+
+    public static final String HEALTH_ENDPOINT = "/admin/health";
+
+    public static final String KEYWORD = "UP";
+
+    public static final String HOST = "http://localhost:";
+
+    @LocalServerPort
+    private int eurekServerPort;
+
+    @Autowired
+    private DiscoveryClient discoveryClient;
+
+    @Autowired
+    private TestRestTemplate testRestTemplate;
+
     @Test
-    public void contextLoads() {
+    public void discoveryClientIsEureka() {
+        assertTrue("discoveryClient is wrong type: " + this.discoveryClient, this.discoveryClient instanceof EurekaDiscoveryClient);
+    }
+
+    @Test
+    public void definedStaticPortIsReachable() {
+        assertTrue("servletContainer running on wrong port: ", this.eurekServerPort == DEFINED_EUREKA_SERVER_PORT);
+    }
+
+    @Test
+    public void healtEndpointIsReachable() {
+        String healthResponse = this.testRestTemplate.getForObject(HOST + DEFINED_EUREKA_SERVER_PORT + HEALTH_ENDPOINT, String.class);
+        assertTrue("health Endpoint is not running", healthResponse.contains(KEYWORD));
     }
 
 }
