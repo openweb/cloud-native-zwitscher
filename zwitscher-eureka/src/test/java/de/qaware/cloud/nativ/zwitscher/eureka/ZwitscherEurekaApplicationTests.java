@@ -31,6 +31,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static junit.framework.TestCase.assertTrue;
@@ -62,7 +63,7 @@ public class ZwitscherEurekaApplicationTests {
     }
 
     @Test
-    public void definedStaticPortIsReachable() {
+    public void servletContainerIsRunningOnDefinedPort() {
         assertTrue("servletContainer running on wrong port: ", this.eurekServerPort == DEFINED_EUREKA_SERVER_PORT);
     }
 
