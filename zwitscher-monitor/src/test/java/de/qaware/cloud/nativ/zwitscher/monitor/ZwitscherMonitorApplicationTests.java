@@ -25,17 +25,75 @@ package de.qaware.cloud.nativ.zwitscher.monitor;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@TestPropertySource("classpath:/application-test.properties")
+@ActiveProfiles("test")
 public class ZwitscherMonitorApplicationTests {
 
+    private static final int DEFINED_PORT = 8989;
+
+    private static final String HOST = "http://localhost:";
+
+    @Autowired
+    private DiscoveryClient discoveryClient;
+
+    @Autowired
+    private TestRestTemplate testRestTemplate;
+
+    @Autowired
+    private Environment environment;
+
+    @LocalServerPort
+    private int configServerPort;
+
     @Test
-    public void contextLoads() {
+    public void discoveryClientIsEurekaDiscoveryClient() {
+        assertTrue("discoveryClient is wrong type: " + this.discoveryClient, this.discoveryClient instanceof EurekaDiscoveryClient);
+    }
+
+    @Test
+    public void servletContainerIsRunningOnDefinedPort() {
+        assertTrue("servletContainer running on wrong port: ", this.configServerPort == DEFINED_PORT);
+    }
+
+    @Test
+    public void hystrixDashboardIsRunning() {
+        ResponseEntity<String> responseEntity = testRestTemplate.getForEntity(HOST + DEFINED_PORT, String.class);
+        assertNotNull("responseEntity is null", responseEntity);
+        assertEquals("wrong status code", HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue(responseEntity.getBody().contains("Hystrix Dashboard"));
+    }
+
+    @Test
+    public void healthEndpointIsReachable() {
+        ResponseEntity<String> responseEntity = testRestTemplate.getForEntity(HOST + DEFINED_PORT + "/health", String.class);
+        assertNotNull("responseEntity is null", responseEntity);
+        assertEquals("wrong status code", HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue("health Endpoint is not reachable", responseEntity.getBody().contains("UP"));
+    }
+
+    @Test
+    public void componentNameIsAvailableUsingInfoEndpoint() {
+        ResponseEntity<String> responseEntity = testRestTemplate.getForEntity(HOST + DEFINED_PORT + "/info", String.class);
+        assertNotNull("responseEntity is null", responseEntity);
+        assertEquals("wrong status code", HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue(responseEntity.getBody().contains(environment.getProperty("info.component")));
     }
 
 }

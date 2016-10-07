@@ -23,6 +23,7 @@
  */
 package de.qaware.cloud.nativ.zwitscher.config;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,34 +31,27 @@ import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.client.discovery.noop.NoopDiscoveryClient;
 import org.springframework.cloud.config.client.ConfigClientProperties;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(properties = {"spring.cloud.config.enabled:true","eureka.client.enabled:false"}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@ActiveProfiles("native")
-@DirtiesContext
+@SpringBootTest(properties = {"spring.cloud.config.enabled:true"}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@ActiveProfiles({"native", "test"})
 public class ZwitscherConfigApplicationTests {
 
-    public static final int DEFINED_CONFIG_SERVER_PORT = 8888;
+    public static final int DEFINED_PORT = 8888;
 
-    public static final String HEALTH_ENDPOINT = "/admin/health";
-
-    public static final String KEYWORD = "UP";
-
-    public static final String URI = "http://localhost:8888";
-
-    public static final String BOARD_TITLE = "FooTitle";
+    public static final String HOST = "http://localhost:";
 
     public static final String CONFIG_ENDPOINT = "/env/zwitscher-board-test.yml";
-
-    public static final String MISSING_CONFIG_VALUE = "foo";
 
     @LocalServerPort
     private int configServerPort;
@@ -72,37 +66,42 @@ public class ZwitscherConfigApplicationTests {
     private ConfigClientProperties configClientProperties;
 
     @Test
-    public void discoveryClientIsNoopDiscoveryClient() {
-        assertTrue("discoveryClient is wrong type: " + this.discoveryClient, this.discoveryClient instanceof NoopDiscoveryClient);
+    public void discoveryClientIsEurekaDiscoveryClient() {
+        assertTrue("discoveryClient is wrong type: " + this.discoveryClient, this.discoveryClient instanceof EurekaDiscoveryClient);
     }
 
     @Test
     public void servletContainerIsRunningOnDefinedPort() {
-        assertTrue("servletContainer running on wrong port: ", this.configServerPort == DEFINED_CONFIG_SERVER_PORT);
+        assertTrue("servletContainer running on wrong port: ", this.configServerPort == DEFINED_PORT);
     }
 
     @Test
     public void configServerLocationMatchesUri() {
-        assertEquals("service running under wrong Uri", URI, configClientProperties.getUri());
+        assertEquals("service running under wrong Uri", HOST + DEFINED_PORT, configClientProperties.getUri());
     }
 
     @Test
     public void healthEndpointIsReachable() {
-        String healthResponse = this.testRestTemplate.getForObject(URI + HEALTH_ENDPOINT, String.class);
-        assertTrue("health Endpoint is not reachable", healthResponse.contains(KEYWORD));
+        ResponseEntity<String> responseEntity = testRestTemplate.getForEntity(HOST + DEFINED_PORT + "/admin/health", String.class);
+        assertNotNull("responseEntity is null", responseEntity);
+        Assert.assertEquals("wrong status code", HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue(responseEntity.getBody().contains("UP"));
     }
 
     @Test
     public void zwitscherBoardConfigIsLoadedAndContainsValue() {
-        String forObject = this.testRestTemplate.getForObject(URI + CONFIG_ENDPOINT, String.class);
-        assertTrue("config does not contain value", forObject.contains(BOARD_TITLE));
+        ResponseEntity<String> responseEntity = testRestTemplate.getForEntity(HOST + DEFINED_PORT + CONFIG_ENDPOINT, String.class);
+        assertNotNull("responseEntity is null", responseEntity);
+        Assert.assertEquals("wrong status code", HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue("config does not contain value", responseEntity.getBody().contains("FooTitle"));
     }
 
     @Test
     public void zwitscherBoardConfigIsLoadedAndDoesNotContainValue() {
-        String forObject = this.testRestTemplate.getForObject(URI + CONFIG_ENDPOINT, String.class);
-        assertTrue("config contains value", !forObject.contains(MISSING_CONFIG_VALUE));
+        ResponseEntity<String> responseEntity = testRestTemplate.getForEntity(HOST + DEFINED_PORT + CONFIG_ENDPOINT, String.class);
+        assertNotNull("responseEntity is null", responseEntity);
+        Assert.assertEquals("wrong status code", HttpStatus.OK, responseEntity.getStatusCode());
+        assertTrue(!responseEntity.getBody().contains("foo"));
     }
-
 
 }
