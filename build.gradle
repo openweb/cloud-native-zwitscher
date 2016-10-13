@@ -11,8 +11,11 @@ buildscript {
         classpath "nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0"
         classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
         classpath 'com.bmuschko:gradle-docker-plugin:2.6.6'
+        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.2-rc1'
     }
 }
+
+apply plugin: 'org.sonarqube'
 
 allprojects {
     apply plugin: 'com.bmuschko.docker-remote-api'
