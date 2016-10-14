@@ -21,8 +21,11 @@ allprojects {
     apply plugin: 'com.bmuschko.docker-remote-api'
 
     docker {
-        url = System.env.DOCKER_HOST?.replace('tcp', 'https') ?: 'https://192.168.99.100:2376'
-        certPath = file("${System.getProperty('user.home')}/.docker/machine/machines/default")
+        url = project.hasProperty('dockerHost') ? project.dockerHost : 'https://192.168.99.100:2376'
+
+        if (url.contains("https://")) {
+            certPath = project.hasProperty('dockerCertPath') ? project.dockerCertPath : file("${System.getProperty('user.home')}/.docker/machine/machines/default")
+        }
 
         registryCredentials {
             url = 'qaware-oss-docker-registry.bintray.io'
