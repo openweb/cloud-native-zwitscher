@@ -28,10 +28,10 @@ allprojects {
         }
 
         registryCredentials {
-            url = 'qaware-oss-docker-registry.bintray.io'
-            username = project.hasProperty('bintrayUsername') ? project.bintrayUsername : 'qaware-oss'
+            url = project.hasProperty('dockerRegistryUrl') ? project.dockerRegistryUrl : 'qaware-oss-docker-registry.bintray.io'
+            username = project.hasProperty('dockerRegistryUsername') ? project.dockerRegistryUsername : 'qaware-oss'
             password = project.hasProperty('bintrayApiKey') ? project.bintrayApiKey : ''
-            email = 'qaware-oss@qaware.de'
+            email = project.hasProperty('dockerRegistryEmail') ? project.dockerRegistryEmail : 'qaware-oss@qaware.de'
         }
     }
 
@@ -109,8 +109,27 @@ subprojects {
     }
 
     task pushDockerImage(type: DockerPushImage) {
-        imageName = "qaware-oss-docker-registry.bintray.io/zwitscher/$project.name:$version"
+        imageName = "10.81.16.196/qaware-oss/zwitscher/$project.name:latest"
     }
+
+    task tagDockerImageWithVersion(type: DockerTagImage) {
+        imageId = "$project.name:$version"
+        repository = "10.81.16.196/qaware-oss/zwitscher/$project.name"
+        tag = "$version"
+    }
+
+    task tagDockerImageWithLatest(type: DockerTagImage) {
+        imageId = "$project.name:$version"
+        repository = "10.81.16.196/qaware-oss/zwitscher/$project.name"
+        tag = 'latest'
+    }
+
+    task TagDockerImage   {
+        dependsOn 'tagDockerImageWithLatest'
+        dependsOn 'tagDockerImageWithVersion'
+    }
+
+
 }
 
 import com.bmuschko.gradle.docker.tasks.DockerInfo
@@ -118,6 +137,7 @@ import com.bmuschko.gradle.docker.tasks.DockerVersion
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 import com.bmuschko.gradle.docker.tasks.image.DockerRemoveImage
+import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
 
 task dockerInfo(type: DockerInfo) {}
 task dockerVersion(type: DockerVersion) {}
