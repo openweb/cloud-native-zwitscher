@@ -30,7 +30,7 @@ allprojects {
         registryCredentials {
             url = project.hasProperty('dockerRegistryUrl') ? project.dockerRegistryUrl : 'qaware-oss-docker-registry.bintray.io'
             username = project.hasProperty('dockerRegistryUsername') ? project.dockerRegistryUsername : 'qaware-oss'
-            password = project.hasProperty('bintrayApiKey') ? project.bintrayApiKey : ''
+            password = project.hasProperty('dockerRegistryApiKey') ? project.dockerRegistryApiKey : ''
             email = project.hasProperty('dockerRegistryEmail') ? project.dockerRegistryEmail : 'qaware-oss@qaware.de'
         }
     }
@@ -109,7 +109,8 @@ subprojects {
     }
 
     task pushDockerImage(type: DockerPushImage) {
-        imageName = "10.81.16.196/qaware-oss/zwitscher/$project.name:latest"
+        def tag = project.hasProperty("tag") ? project.tag : "$version"
+        imageName = "10.81.16.196/qaware-oss/zwitscher/$project.name:$tag"
     }
 
     task tagDockerImageWithVersion(type: DockerTagImage) {
