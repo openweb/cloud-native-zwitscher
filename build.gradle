@@ -22,17 +22,17 @@ allprojects {
     apply plugin: 'com.bmuschko.docker-remote-api'
 
     docker {
-        url = project.hasProperty('dockerHost') ? project.dockerHost : 'https://192.168.99.100:2376'
+        url = getPropertyValue('dockerHost', 'https://192.168.99.100:2376')
 
         if (url.contains("https://")) {
-            certPath = project.hasProperty('dockerCertPath') ? project.dockerCertPath : file("${System.getProperty('user.home')}/.docker/machine/machines/default")
+            certPath = getPropertyValue('dockerCertPath', file("${System.getProperty('user.home')}/.docker/machine/machines/default"))
         }
 
         registryCredentials {
-            url = project.hasProperty('dockerRegistryUrl') ? project.dockerRegistryUrl : 'qaware-oss-docker-registry.bintray.io'
-            username = project.hasProperty('dockerRegistryUsername') ? project.dockerRegistryUsername : 'qaware-oss'
-            password = project.hasProperty('dockerRegistryApiKey') ? project.dockerRegistryApiKey : ''
-            email = project.hasProperty('dockerRegistryEmail') ? project.dockerRegistryEmail : 'qaware-oss@qaware.de'
+            url = getPropertyValue('dockerRegistryUrl','qaware-os-docker-registry.bintray.io')
+            username = getPropertyValue('dockerRegistryUsername','qaware-oss')
+            password = getPropertyValue('dockerRegistryApiKey','')
+            email = getPropertyValue('dockerRegistryEmail','qaware-oss@qaware.de')
         }
     }
 
@@ -112,29 +112,42 @@ subprojects {
         imageId = "$project.name:$version"
     }
 
-    task pushDockerImage(type: DockerPushImage) {
-        def tag = project.hasProperty("tag") ? project.tag : "$version"
-        imageName = "10.81.16.196/qaware-oss/zwitscher/$project.name:$tag"
+    task pushDockerImageWithVersion(type: DockerPushImage) {
+        def repository = getPropertyValue('dockerRepository','qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher')
+        imageName = "$repository/$project.name:$version"
+    }
+
+    task pushLatestDockerImage(type: DockerPushImage) {
+        def repository = getPropertyValue('dockerRepository','qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher')
+        imageName = "$repository/$project.name:latest"
+    }
+
+    task pushDockerImages() {
+        dependsOn 'pushDockerImageWithVersion'
+        dependsOn 'pushLatestDockerImage'
     }
 
     task tagDockerImageWithVersion(type: DockerTagImage) {
         imageId = "$project.name:$version"
-        repository = "10.81.16.196/qaware-oss/zwitscher/$project.name"
+        repository = getPropertyValue('dockerRepository','qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher') + "/$project.name"
         tag = "$version"
     }
 
     task tagDockerImageWithLatest(type: DockerTagImage) {
         imageId = "$project.name:$version"
-        repository = "10.81.16.196/qaware-oss/zwitscher/$project.name"
+        repository = getPropertyValue('dockerRepository','qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher') + "/$project.name"
         tag = 'latest'
     }
 
-    task TagDockerImage   {
+    task tagDockerImages {
         dependsOn 'tagDockerImageWithLatest'
         dependsOn 'tagDockerImageWithVersion'
     }
 
+}
 
+def getPropertyValue(String propertyName, defaultValue) {
+    return project.hasProperty(propertyName) ? project.properties.get(propertyName) : defaultValue;
 }
 
 import com.bmuschko.gradle.docker.tasks.DockerInfo
