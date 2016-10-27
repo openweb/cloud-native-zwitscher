@@ -21,3 +21,9 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://${eureka.host:localhost}:${eureka.port:8761}/eureka/
+---
+spring:
+  profiles: integration-test
+  cloud:
+    config:
+      uri: http://192.168.99.100:8888

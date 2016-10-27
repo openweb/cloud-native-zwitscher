@@ -1,0 +1,20 @@
+zwitschereureka:
+  image: "zwitscher-eureka:1.2.0"
+  hostname: zwitschereureka
+  environment:
+    JAVA_OPTS: -Xmx128m -Dcom.sun.management.jmxremote.port=9761 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false
+  ports:
+    - "8761:8761"
+
+zwitscherconfig:
+  image: "zwitscher-config:1.2.0"
+  hostname: zwitscherconfig
+  links:
+    - zwitschereureka
+  environment:
+    DOCKER_COMPOSE: 'true'
+    EUREKA_HOST: zwitschereureka
+    EUREKA_PORT: 8761
+    JAVA_OPTS: -Xmx128m -Dcom.sun.management.jmxremote.port=9888 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false
+  ports:
+    - "8888:8888"
