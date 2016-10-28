@@ -13,10 +13,12 @@ buildscript {
         classpath 'com.bmuschko:gradle-docker-plugin:3.0.3'
         classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.2-rc1'
         classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.2.0'
+        classpath 'gradle.plugin.de.qaware.cloud.deployer:deployer:0.9.1'
     }
 }
 
 apply plugin: 'org.sonarqube'
+
 
 allprojects {
     apply plugin: 'com.bmuschko.docker-remote-api'
@@ -50,6 +52,7 @@ subprojects {
     apply plugin: 'spring-boot'
     apply plugin: "com.github.hierynomus.license"
     apply plugin: 'org.unbroken-dome.test-sets'
+    apply plugin: 'de.qaware.cloud.deployer'
 
     license {
         skipExistingHeaders = true
@@ -142,6 +145,18 @@ subprojects {
     task tagDockerImages {
         dependsOn 'tagDockerImageWithLatest'
         dependsOn 'tagDockerImageWithVersion'
+    }
+
+    deployer {
+        marathon {
+            id = "marathon-$project.name"
+            baseUrl = "http://147.75.100.39"
+            strategy = "REPLACE"
+            auth {
+                token = dcosAuthToken()
+            }
+            files = [file("marathon-$project.name" + ".json")]
+        }
     }
 
 }
