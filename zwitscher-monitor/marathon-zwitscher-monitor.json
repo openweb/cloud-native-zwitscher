@@ -4,9 +4,8 @@
   "instances": 1,
   "cpus": 0.2,
   "mem": 512,
-
+  "acceptedResourceRoles": ["slave_public"],
   "cmd": "/opt/java/latest/bin/java -Xmx256m -Dserver.port=$PORT0 -Deureka.instance.ipAddress=$HOST  -jar /opt/zwitscher-monitor/zwitscher-monitor.jar",
-
   "container": {
     "type": "DOCKER",
     "docker": {

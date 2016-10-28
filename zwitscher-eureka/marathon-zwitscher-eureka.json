@@ -4,7 +4,7 @@
   "instances": 1,
   "cpus": 0.2,
   "mem": 512,
-
+  "acceptedResourceRoles": ["slave_public"],
   "container": {
     "type": "DOCKER",
     "docker": {
