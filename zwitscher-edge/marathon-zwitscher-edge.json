@@ -5,7 +5,7 @@
   "cpus": 0.2,
   "mem": 512,
   "acceptedResourceRoles": ["slave_public"],
-  "cmd": "/opt/java/latest/bin/java -Xmx256m -Dserver.port=$PORT0 -Deureka.instance.ipAddress=$HOST  -jar /opt/zwitscher-edge/zwitscher-edge.jar",
+  "cmd": "java -Xmx256m -Dserver.port=$PORT0 -Deureka.instance.ipAddress=$HOST  -jar /opt/zwitscher-edge/zwitscher-edge.jar",
 
   "container": {
     "type": "DOCKER",
@@ -13,7 +13,7 @@
       "image": "qaware-oss-docker-registry.bintray.io/zwitscher/zwitscher-edge:1.1.0",
       "network": "BRIDGE",
       "portMappings": [
-        { "hostPort": 0, "containerPort": 8765, "protocol": "tcp"}
+        { "hostPort": 0, "containerPort": 0, "protocol": "tcp"}
       ]
     }
   },

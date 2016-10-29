@@ -5,7 +5,7 @@
   "cpus": 0.2,
   "mem": 512,
   "acceptedResourceRoles": ["slave_public"],
-  "cmd": "/opt/java/latest/bin/java -Xmx256m -Dserver.port=$PORT0 -Deureka.instance.ipAddress=$HOST -jar /opt/zwitscher-service/zwitscher-service.jar",
+  "cmd": "java -Xmx256m -Dserver.port=$PORT0 -Deureka.instance.ipAddress=$HOST -jar /opt/zwitscher-service/zwitscher-service.jar",
   "container": {
     "type": "DOCKER",
     "docker": {

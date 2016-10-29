@@ -5,14 +5,14 @@
   "cpus": 0.2,
   "mem": 512,
   "acceptedResourceRoles": ["slave_public"],
-  "cmd": "/opt/java/latest/bin/java -Xmx256m -Dserver.port=$PORT0 -Deureka.instance.ipAddress=$HOST  -jar /opt/zwitscher-monitor/zwitscher-monitor.jar",
+  "cmd": "java -Xmx256m -Dserver.port=$PORT0 -Deureka.instance.ipAddress=$HOST  -jar /opt/zwitscher-monitor/zwitscher-monitor.jar",
   "container": {
     "type": "DOCKER",
     "docker": {
       "image": "qaware-oss-docker-registry.bintray.io/zwitscher/zwitscher-monitor:1.1.0",
       "network": "BRIDGE",
       "portMappings": [
-        { "hostPort": 0, "containerPort": 8989, "protocol": "tcp"}
+        { "hostPort": 0, "containerPort": 0, "protocol": "tcp"}
       ]
     }
   },
