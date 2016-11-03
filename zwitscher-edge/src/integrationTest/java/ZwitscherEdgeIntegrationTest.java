@@ -31,6 +31,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -44,7 +45,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ZwitscherEdgeApplication.class)
-@ActiveProfiles("integration-test")
+@ActiveProfiles({"native", "integration-test"})
 public class ZwitscherEdgeIntegrationTest {
 
     private String dockerHost;
@@ -79,7 +80,7 @@ public class ZwitscherEdgeIntegrationTest {
 
     @ClassRule
     public static DockerComposeRule docker = DockerComposeRule.builder()
-            .file("src/integrationTest/resources/compose.yml")
+            .file("src/integrationTest/resources/docker-compose.yml")
             .waitingForService("zwitscheredge", HealthChecks.toHaveAllPortsOpen(), Duration.standardMinutes(5))
             .saveLogsTo("build/dockerLogs/dockerComposeRuleTest")
             .build();
@@ -89,9 +90,9 @@ public class ZwitscherEdgeIntegrationTest {
     public void edgeServerIsUsingZwitscherService() {
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> responseEntity = restTemplate.getForEntity(dockerUrl + ":8765", String.class);
+        assertTrue(responseEntity.getStatusCode().equals(HttpStatus.OK));
         assertTrue(responseEntity.getBody().contains("Random Quote"));
         assertTrue(!responseEntity.getBody().contains("Everything fails all the time."));
-        assertTrue(true);
     }
 
 }
