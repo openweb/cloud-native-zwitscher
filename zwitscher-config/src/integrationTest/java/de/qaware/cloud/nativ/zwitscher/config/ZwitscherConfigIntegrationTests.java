@@ -24,6 +24,7 @@
 package de.qaware.cloud.nativ.zwitscher.config;
 
 import com.palantir.docker.compose.DockerComposeRule;
+import com.palantir.docker.compose.connection.DockerPort;
 import com.palantir.docker.compose.connection.waiting.HealthChecks;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -54,78 +55,34 @@ import static org.junit.Assert.assertTrue;
 @SpringBootTest
 public class ZwitscherConfigIntegrationTests {
 
-    private String dockerHost;
+    private static final String SERVICE_NAME = "zwitscherconfig";
 
-    private String dockerUrl;
+    private static final int SERVICE_PORT = 8888;
 
-    private List<Integer> servicePorts;
+    private static final String DOCKER_PORT_FORMAT = "http://$HOST:$EXTERNAL_PORT/env/zwitscher-edge.yml";
 
-    @Before
-    public void initialize() throws URISyntaxException, IOException {
-        initializeDockerHost();
-        initializeDockerUrl();
-        servicePorts = new ArrayList<>();
-        servicePorts.add(Integer.valueOf(8761));
-        servicePorts.add(Integer.valueOf(8888));
-    }
+    private static final String DOCKER_COMPOSE_FILE_LOCATION = "src/integrationTest/resources/docker-compose.yml";
 
-    private void initializeDockerHost() {
-        dockerHost = System.getenv("DOCKER_HOST");
+    private static final String LOG_OUTPUT_DIRECTORY = "build/dockerLogs/dockerComposeRuleTest";
 
-        if (dockerHost == null) {
-            dockerHost = "https://192.168.99.100:2376";
-            return;
-        }
-
-        if (dockerHost.contains("tcp")) {
-            dockerHost = dockerHost.replace("tcp", "https");
-            return;
-        }
-    }
-
-    private void initializeDockerUrl() throws URISyntaxException {
-        URI uri = new URI(dockerHost);
-        dockerUrl = "http://" + uri.getHost();
-    }
+    private static final String KEYWORD = "zuul";
 
     @ClassRule
     public static DockerComposeRule docker = DockerComposeRule.builder()
-            .file("src/integrationTest/resources/docker-compose.yml")
-            .waitingForService("zwitschereureka", HealthChecks.toHaveAllPortsOpen())
-            .waitingForService("zwitscherconfig", HealthChecks.toHaveAllPortsOpen())
-            .saveLogsTo("build/dockerLogs/dockerComposeRuleTest")
+            .file(DOCKER_COMPOSE_FILE_LOCATION)
+            .waitingForService(SERVICE_NAME, HealthChecks.toHaveAllPortsOpen())
+            .saveLogsTo(LOG_OUTPUT_DIRECTORY)
             .build();
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
-
-    @Test
-    public void allServicesAreAvailable() throws Exception {
-        RestTemplate restTemplate = new RestTemplate();
-        for (Integer port : servicePorts) {
-            ResponseEntity<String> responseEntity = restTemplate.getForEntity(dockerUrl + ":" + port.intValue() + "/admin/info", String.class);
-            assertNotNull("responseEntity is null", responseEntity);
-            assertEquals("wrong status code", HttpStatus.OK, responseEntity.getStatusCode());
-        }
-
-    }
-
-    @Test
-    public void serviceIsNotAvailable() {
-        RestTemplate restTemplate = new RestTemplate();
-        exception.expect(ResourceAccessException.class);
-        exception.expectMessage("Connection refused");
-        restTemplate.getForEntity(dockerUrl + ":9000", Object.class);
-    }
 
     @Test
     public void configValueIsAvailable() {
+        DockerPort dockerPort = docker.containers().container(SERVICE_NAME).port(SERVICE_PORT);
+        String url = dockerPort.inFormat(DOCKER_PORT_FORMAT);
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(dockerUrl + ":8888/env/zwitscher-edge.yml", String.class);
+        ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class);
         assertNotNull("responseEntity is null", responseEntity);
         assertEquals("wrong status code", HttpStatus.OK, responseEntity.getStatusCode());
-        assertTrue(responseEntity.getBody().contains("zuul"));
+        assertTrue("config server is not available", responseEntity.getBody().contains(KEYWORD));
     }
 
 }

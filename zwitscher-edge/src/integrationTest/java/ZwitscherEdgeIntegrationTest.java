@@ -23,6 +23,7 @@
  */
 
 import com.palantir.docker.compose.DockerComposeRule;
+import com.palantir.docker.compose.connection.DockerPort;
 import com.palantir.docker.compose.connection.waiting.HealthChecks;
 import de.qaware.cloud.nativ.zwitscher.edge.ZwitscherEdgeApplication;
 import org.joda.time.Duration;
@@ -48,48 +49,30 @@ import static org.junit.Assert.assertTrue;
 @ActiveProfiles({"native", "integration-test"})
 public class ZwitscherEdgeIntegrationTest {
 
-    private String dockerHost;
+    private static final String SERVICE_NAME = "zwitscheredge";
 
-    private String dockerUrl;
+    private static final int SERVICE_PORT = 8765;
 
+    private static final String DOCKER_PORT_FORMAT = "http://$HOST:$EXTERNAL_PORT";
 
-    @Before
-    public void initialize() throws URISyntaxException, IOException {
-        initializeDockerHost();
-        initializeDockerUrl();
-    }
+    private static final String DOCKER_COMPOSE_FILE_LOCATION = "src/integrationTest/resources/docker-compose.yml";
 
-    private void initializeDockerHost() {
-        dockerHost = System.getenv("DOCKER_HOST");
-
-        if (dockerHost == null) {
-            dockerHost = "https://192.168.99.100:2376";
-            return;
-        }
-
-        if (dockerHost.contains("tcp")) {
-            dockerHost = dockerHost.replace("tcp", "https");
-            return;
-        }
-    }
-
-    private void initializeDockerUrl() throws URISyntaxException {
-        URI uri = new URI(dockerHost);
-        dockerUrl = "http://" + uri.getHost();
-    }
+    private static final String LOG_OUTPUT_DIRECTORY = "build/dockerLogs/dockerComposeRuleTest";
 
     @ClassRule
     public static DockerComposeRule docker = DockerComposeRule.builder()
-            .file("src/integrationTest/resources/docker-compose.yml")
-            .waitingForService("zwitscheredge", HealthChecks.toHaveAllPortsOpen(), Duration.standardMinutes(5))
-            .saveLogsTo("build/dockerLogs/dockerComposeRuleTest")
+            .file(DOCKER_COMPOSE_FILE_LOCATION)
+            .waitingForService(SERVICE_NAME, HealthChecks.toHaveAllPortsOpen(), Duration.standardMinutes(5))
+            .saveLogsTo(LOG_OUTPUT_DIRECTORY)
             .build();
 
 
     @Test
     public void edgeServerIsUsingZwitscherService() {
+        DockerPort dockerPort = docker.containers().container(SERVICE_NAME).port(SERVICE_PORT);
+        String url = dockerPort.inFormat(DOCKER_PORT_FORMAT);
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(dockerUrl + ":8765", String.class);
+        ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class);
         assertTrue(responseEntity.getStatusCode().equals(HttpStatus.OK));
         assertTrue(responseEntity.getBody().contains("Random Quote"));
         assertTrue(!responseEntity.getBody().contains("Everything fails all the time."));

@@ -25,25 +25,20 @@
 package de.qaware.cloud.nativ.zwitscher.eureka;
 
 import com.palantir.docker.compose.DockerComposeRule;
+import com.palantir.docker.compose.connection.DockerPort;
 import com.palantir.docker.compose.connection.waiting.HealthChecks;
-import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 
@@ -52,59 +47,34 @@ import static org.junit.Assert.assertEquals;
 @SpringBootTest
 public class ZwitscherEurekaIntegrationTests {
 
-    private String dockerHost;
+    private static final String SERVICE_NAME = "zwitschereureka";
 
-    private String dockerUrl;
+    private static final int SERVICE_PORT = 8761;
 
-    @Before
-    public void initialize() throws URISyntaxException {
-        initializeDockerHost();
-        initializeDockerUrl();
-    }
+    private static final String DOCKER_PORT_FORMAT = "http://$HOST:$EXTERNAL_PORT";
 
-    private void initializeDockerHost() {
-        dockerHost = System.getenv("DOCKER_HOST");
+    private static final String DOCKER_COMPOSE_FILE_LOCATION = "src/integrationTest/resources/docker-compose.yml";
 
-        if (dockerHost == null) {
-            dockerHost = "https://192.168.99.100:2376";
-            return;
-        }
+    private static final String LOG_OUTPUT_DIRECTORY = "build/dockerLogs/dockerComposeRuleTest";
 
-        if (dockerHost.contains("tcp")) {
-            dockerHost = dockerHost.replace("tcp", "https");
-            return;
-        }
-    }
-
-    private void initializeDockerUrl() throws URISyntaxException {
-        URI uri = new URI(dockerHost);
-        dockerUrl = "http://" + uri.getHost();
-    }
+    private static final String KEYWORD = "eureka";
 
     @ClassRule
     public static DockerComposeRule docker = DockerComposeRule.builder()
-            .file("src/integrationTest/resources/docker-compose.yml")
-            .waitingForService("zwitschereureka", HealthChecks.toHaveAllPortsOpen())
-            .saveLogsTo("build/dockerLogs/dockerComposeRuleTest")
+            .file(DOCKER_COMPOSE_FILE_LOCATION)
+            .waitingForService(SERVICE_NAME, HealthChecks.toHaveAllPortsOpen())
+            .saveLogsTo(LOG_OUTPUT_DIRECTORY)
             .build();
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
     @Test
-    public void allServicesAreAvailable() throws Exception {
+    public void eurekaServerIsAvailable() throws Exception {
+        DockerPort dockerPort = docker.containers().container(SERVICE_NAME).port(SERVICE_PORT);
+        String url = dockerPort.inFormat(DOCKER_PORT_FORMAT);
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(dockerUrl + ":8761", String.class);
+        ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class);
         assertNotNull("responseEntity is null", responseEntity);
         assertEquals("wrong status code", HttpStatus.OK, responseEntity.getStatusCode());
-    }
-
-    @Test
-    public void serviceIsNotAvailable() {
-        RestTemplate restTemplate = new RestTemplate();
-        exception.expect(ResourceAccessException.class);
-        exception.expectMessage("Connection refused");
-        restTemplate.getForEntity(dockerUrl + ":9000", Object.class);
+        assertTrue("eureka is not running", responseEntity.getBody().contains(KEYWORD));
     }
 
 }
