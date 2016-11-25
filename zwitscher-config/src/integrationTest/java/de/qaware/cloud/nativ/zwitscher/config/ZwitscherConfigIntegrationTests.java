@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
@@ -52,7 +53,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles({"native", "integration-test"})
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ZwitscherConfigIntegrationTests {
 
     private static final String SERVICE_NAME = "zwitscherconfig";
@@ -78,7 +79,7 @@ public class ZwitscherConfigIntegrationTests {
     public void configValueIsAvailable() {
         DockerPort dockerPort = docker.containers().container(SERVICE_NAME).port(SERVICE_PORT);
         String url = dockerPort.inFormat(DOCKER_PORT_FORMAT);
-        RestTemplate restTemplate = new RestTemplate();
+        TestRestTemplate restTemplate = new TestRestTemplate();
         ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class);
         assertNotNull("responseEntity is null", responseEntity);
         assertEquals("wrong status code", HttpStatus.OK, responseEntity.getStatusCode());
