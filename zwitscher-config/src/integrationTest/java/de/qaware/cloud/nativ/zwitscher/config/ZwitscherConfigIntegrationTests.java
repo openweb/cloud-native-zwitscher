@@ -80,7 +80,7 @@ public class ZwitscherConfigIntegrationTests {
         DockerPort dockerPort = docker.containers().container(SERVICE_NAME).port(SERVICE_PORT);
         String url = dockerPort.inFormat(DOCKER_PORT_FORMAT);
         TestRestTemplate restTemplate = new TestRestTemplate();
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.getForEntity("http://localhost:8888/env/zwitscher-edge.yml", String.class);
         assertNotNull("responseEntity is null", responseEntity);
         assertEquals("wrong status code", HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue("config server is not available", responseEntity.getBody().contains(KEYWORD));
