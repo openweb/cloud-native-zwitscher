@@ -68,17 +68,8 @@ public class ZwitscherConfigIntegrationTests {
 
     private static final String KEYWORD = "zuul";
 
-    @ClassRule
-    public static DockerComposeRule docker = DockerComposeRule.builder()
-            .file(DOCKER_COMPOSE_FILE_LOCATION)
-            .waitingForService(SERVICE_NAME, HealthChecks.toHaveAllPortsOpen())
-            .saveLogsTo(LOG_OUTPUT_DIRECTORY)
-            .build();
-
     @Test
     public void configValueIsAvailable() {
-        DockerPort dockerPort = docker.containers().container(SERVICE_NAME).port(SERVICE_PORT);
-        String url = dockerPort.inFormat(DOCKER_PORT_FORMAT);
         TestRestTemplate restTemplate = new TestRestTemplate();
         ResponseEntity<String> responseEntity = restTemplate.getForEntity("http://localhost:8888/env/zwitscher-edge.yml", String.class);
         assertNotNull("responseEntity is null", responseEntity);
