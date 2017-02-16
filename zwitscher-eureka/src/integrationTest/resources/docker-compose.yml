@@ -1,7 +1,0 @@
-zwitschereureka:
-  image: "zwitscher-eureka:1.2.0"
-  hostname: zwitschereureka
-  environment:
-    JAVA_OPTS: -Xmx128m
-  ports:
-    - "8761:8761"
