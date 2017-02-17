@@ -55,7 +55,7 @@ public class ZwitscherEdgeIntegrationTest {
         ResponseEntity<String> responseEntity = restTemplate.getForEntity("http://localhost:8765", String.class);
         assertTrue(responseEntity.getStatusCode().equals(HttpStatus.OK));
         assertTrue(responseEntity.getBody().contains("Random Quote"));
-        assertTrue(!responseEntity.getBody().contains("Zwitscher Messages on Topic"));
+        assertTrue(responseEntity.getBody().contains("Zwitscher Messages on Topic"));
     }
 
 }
