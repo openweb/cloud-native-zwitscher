@@ -150,11 +150,11 @@ subprojects {
     deployer {
         marathon {
             id = "marathon-$project.name"
-            baseUrl = System.env.DCOS_BASE_URL
-            strategy = "REPLACE"
+            baseUrl = System.env.CLOUD_DEPLOYMENT_BASE_URL
+            strategy = System.env.CLOUD_DEPLOYMENT_STRATEGY
             auth {
-                username = System.env.DCOS_USERNAME
-                password = System.env.DCOS_PASSWORD
+                username = System.env.CLOUD_DEPLOYMENT_USERNAME
+                password = System.env.CLOUD_DEPLOYMENT_PASSWORD
             }
             files = [file("marathon-$project.name" + ".json")]
         }
