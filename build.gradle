@@ -150,10 +150,11 @@ subprojects {
     deployer {
         marathon {
             id = "marathon-$project.name"
-            baseUrl = "http://147.75.100.39"
+            baseUrl = System.env.DCOS_BASE_URL
             strategy = "REPLACE"
             auth {
-                token = dcosAuthToken()
+                username = System.env.DCOS_USERNAME
+                password = System.env.DCOS_PASSWORD
             }
             files = [file("marathon-$project.name" + ".json")]
         }
