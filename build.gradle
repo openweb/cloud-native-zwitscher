@@ -132,13 +132,13 @@ subprojects {
 
     task tagDockerImageWithVersion(type: DockerTagImage) {
         imageId = "$project.name:$version"
-        repository = System.env.DOCKER_REPOSITORY ?: "qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher/$project.name"
+        repository = (System.env.DOCKER_REPOSITORY ?: "qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher").concat("/$project.name")
         tag = "$version"
     }
 
     task tagDockerImageWithLatest(type: DockerTagImage) {
         imageId = "$project.name:$version"
-        repository = System.env.DOCKER_REPOSITORY ?: "qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher/$project.name"
+        repository = (System.env.DOCKER_REPOSITORY ?: "qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher").concat("/$project.name")
         tag = 'latest'
     }
 
