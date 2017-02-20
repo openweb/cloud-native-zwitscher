@@ -153,8 +153,7 @@ subprojects {
             baseUrl = System.env.CLOUD_DEPLOYMENT_BASE_URL
             strategy = System.env.CLOUD_DEPLOYMENT_STRATEGY
             auth {
-                username = System.env.CLOUD_DEPLOYMENT_USERNAME
-                password = System.env.CLOUD_DEPLOYMENT_PASSWORD
+                token = defaultToken(file(System.env.TOKEN_FILE))
             }
             files = [file("marathon-$project.name" + ".json")]
         }
