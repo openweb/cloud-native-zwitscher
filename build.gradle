@@ -31,10 +31,10 @@ allprojects {
         }
 
         registryCredentials {
-            url = getPropertyValue('dockerRegistryUrl','qaware-os-docker-registry.bintray.io')
-            username = getPropertyValue('dockerRegistryUsername','qaware-oss')
-            password = getPropertyValue('dockerRegistryApiKey','')
-            email = getPropertyValue('dockerRegistryEmail','qaware-oss@qaware.de')
+            url = System.env.DOCKER_REGISTRY_URL ?: 'qaware-os-docker-registry.bintray.io'
+            username = System.env.DOCKER_REGISTRY_USERNAME ?: 'qaware-oss'
+            password = System.env.DOCKER_REGISTRY_API_KEY ?: ''
+            email = System.env.DOCKER_REGISTRY_EMAIL ?: 'qaware-oss@qaware.de'
         }
     }
 
@@ -116,12 +116,12 @@ subprojects {
     }
 
     task pushDockerImageWithVersion(type: DockerPushImage) {
-        def repository = getPropertyValue('dockerRepository','qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher')
+        def repository = repository = System.env.DOCKER_REPOSITORY ?: 'qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher/'
         imageName = "$repository/$project.name:$version"
     }
 
     task pushLatestDockerImage(type: DockerPushImage) {
-        def repository = getPropertyValue('dockerRepository','qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher')
+        def repository = repository = System.env.DOCKER_REPOSITORY ?: 'qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher/'
         imageName = "$repository/$project.name:latest"
     }
 
@@ -132,13 +132,13 @@ subprojects {
 
     task tagDockerImageWithVersion(type: DockerTagImage) {
         imageId = "$project.name:$version"
-        repository = getPropertyValue('dockerRepository','qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher') + "/$project.name"
+        repository = System.env.DOCKER_REPOSITORY ?: "qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher/$project.name"
         tag = "$version"
     }
 
     task tagDockerImageWithLatest(type: DockerTagImage) {
         imageId = "$project.name:$version"
-        repository = getPropertyValue('dockerRepository','qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher') + "/$project.name"
+        repository = System.env.DOCKER_REPOSITORY ?: "qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher/$project.name"
         tag = 'latest'
     }
 
@@ -159,10 +159,6 @@ subprojects {
         }
     }
 
-}
-
-def getPropertyValue(String propertyName, defaultValue) {
-    return project.hasProperty(propertyName) ? project.properties.get(propertyName) : defaultValue;
 }
 
 import com.bmuschko.gradle.docker.tasks.DockerInfo
