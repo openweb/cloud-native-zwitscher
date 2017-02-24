@@ -95,5 +95,4 @@ public class ZwitscherBoardApplicationTests {
         assertEquals("wrong status code", HttpStatus.OK, responseEntity.getStatusCode());
         assertTrue(responseEntity.getBody().contains(environment.getProperty("info.component")));
     }
-
 }
