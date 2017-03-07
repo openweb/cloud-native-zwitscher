@@ -25,7 +25,7 @@ allprojects {
 
     docker {
 
-        url = System.env.DOCKER_HOST ?: 'https://192.168.99.100:2376'
+        url = System.env.DOCKER_HOSTT?.replace('tcp', 'https') ?: 'https://192.168.99.100:2376'
         if (url.contains("https://")) {
             certPath = file("${System.getProperty('user.home')}/.docker/machine/machines/default")
         }
@@ -153,7 +153,7 @@ subprojects {
             baseUrl = System.env.CLOUD_DEPLOYMENT_BASE_URL
             strategy = System.env.CLOUD_DEPLOYMENT_STRATEGY
             auth {
-                token = defaultToken(file(System.env.TOKEN_FILE))
+                token = defaultToken(file(System.env.TOKEN_FILE?: "~/.dcos/dcos.toml"))
             }
             files = [file("marathon-$project.name" + ".json")]
         }
@@ -170,4 +170,3 @@ import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
 
 task dockerInfo(type: DockerInfo) {}
 task dockerVersion(type: DockerVersion) {}
-
