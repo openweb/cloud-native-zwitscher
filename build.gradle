@@ -25,7 +25,7 @@ allprojects {
 
     docker {
 
-        url = System.env.DOCKER_HOSTT?.replace('tcp', 'https') ?: 'https://192.168.99.100:2376'
+        url = System.env.DOCKER_HOST?.replace('tcp', 'https') ?: 'https://192.168.99.100:2376'
         if (url.contains("https://")) {
             certPath = file("${System.getProperty('user.home')}/.docker/machine/machines/default")
         }
