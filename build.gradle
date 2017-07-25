@@ -117,12 +117,12 @@ subprojects {
 
     task pushDockerImageWithVersion(type: DockerPushImage) {
         def repository = System.env.DOCKER_REPOSITORY ?: 'qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher/'
-        imageName = "$repository/$project.name:$version"
+        imageName = "toplac-docker-playground.bintray.io/zwitscher/$project.name:$version"
     }
 
     task pushLatestDockerImage(type: DockerPushImage) {
         def repository = System.env.DOCKER_REPOSITORY ?: 'qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher/'
-        imageName = "$repository/$project.name:latest"
+        imageName = "toplac-docker-playground.bintray.io/zwitscher/$project.name:latest"
     }
 
     task pushDockerImages() {
