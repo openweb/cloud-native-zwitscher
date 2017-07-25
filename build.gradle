@@ -31,7 +31,7 @@ allprojects {
         }
 
         registryCredentials {
-            url = System.env.DOCKER_REGISTRY_URL ?: 'qaware-os-docker-registry.bintray.io'
+            url = "toplac-docker-playground.bintray.io"
             username = System.env.DOCKER_REGISTRY_CREDENTIALS_USR ?: 'qaware-oss'
             password = System.env.DOCKER_REGISTRY_CREDENTIALS_PSW ?: ''
             email = System.env.DOCKER_REGISTRY_EMAIL ?: 'qaware-oss@qaware.de'
@@ -116,12 +116,12 @@ subprojects {
     }
 
     task pushDockerImageWithVersion(type: DockerPushImage) {
-        def repository = System.env.DOCKER_REPOSITORY ?: 'qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher/'
+
         imageName = "toplac-docker-playground.bintray.io/zwitscher/$project.name:$version"
     }
 
     task pushLatestDockerImage(type: DockerPushImage) {
-        def repository = System.env.DOCKER_REPOSITORY ?: 'qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher/'
+
         imageName = "toplac-docker-playground.bintray.io/zwitscher/$project.name:latest"
     }
 
@@ -132,13 +132,13 @@ subprojects {
 
     task tagDockerImageWithVersion(type: DockerTagImage) {
         imageId = "$project.name:$version"
-        repository = (System.env.DOCKER_REPOSITORY ?: "qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher").concat("/$project.name")
+        repository = "toplac-docker-playground.bintray.io/zwitscher".concat("/$project.name")
         tag = "$version"
     }
 
     task tagDockerImageWithLatest(type: DockerTagImage) {
         imageId = "$project.name:$version"
-        repository = (System.env.DOCKER_REPOSITORY ?: "qaware-os-docker-registry.bintray.io/qaware-oss/zwitscher").concat("/$project.name")
+        repository = "toplac-docker-playground.bintray.io/zwitscher".concat("/$project.name")
         tag = 'latest'
     }
 
